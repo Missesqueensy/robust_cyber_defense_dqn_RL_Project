@@ -1,0 +1,92 @@
+# Literature Review : Apprentissage par renforcement pour la cyberdéfense autonome
+
+> Mini-projet RL, module Apprentissage par renforcement.
+> Sujet : ablation factorielle 2^3 (Double DQN, Dueling DQN, Prioritized Experience Replay)
+> appliquée à la défense d'un réseau simulé dans l'environnement **YAWNING TITAN** (Dstl).
+> Variations d'évaluation choisies : généralisation topologique et taux de fausses alertes
+> (faux positifs / faux négatifs).
+>
+> Ce fichier recense les articles étudiés avant implémentation, organisés par axe.
+> Chaque entrée indique pourquoi l'article est pertinent pour le projet.
+
+---
+
+## 1. Algorithmes DQN : fondations
+
+| # | Article | Année / venue | Pourquoi le lire |
+|---|---------|---------------|------------------|
+| 1 | Mnih et al., *Human-level control through deep reinforcement learning*, Nature 518(7540), 529-533. doi:10.1038/nature14236 | 2015 | Le DQN de base : réseau de neurones, replay, réseau cible, exploration eps-greedy. C'est notre socle commun à partir duquel chaque composant s'active. |
+| 2 | van Hasselt, Guez, Silver, *Deep Reinforcement Learning with Double Q-learning*, AAAI 30(1), 2094-2100. doi:10.1609/aaai.v30i1.10295, arXiv:1509.06461 | 2016 | Double DQN : décompose l'estimation de sur-estimation des Q-valeurs du Q-learning ; sépare la sélection et l'évaluation de l'action. Composant du binôme. |
+| 3 | Wang et al., *Dueling Network Architectures for Deep Reinforcement Learning*, ICML, arXiv:1511.06581 | 2016 | Dueling DQN : décompose Q(s,a) en valeur d'état V(s) + avantage A(s,a). Généralise l'apprentissage à travers les actions, surtout quand beaucoup d'actions ont des valeurs proches. Partie de Ahlame. |
+| 4 | Schaul, Quan, Antonoglou, Silver, *Prioritized Experience Replay*, ICLR, arXiv:1511.05952 | 2016 | PER : échantillonnage proportionnel à l'erreur TD (variantes proportionnelle et rang), importance sampling pour corriger le biais, hyperparamètres alpha et beta. DQN + PER bat le replay uniforme sur 41/49 jeux Atari. Partie de Ahlame. |
+| 5 | Hessel et al., *Rainbow: Combining Improvements in Deep Reinforcement Learning*, AAAI 32(1). doi:10.1609/aaai.v32i1.11796, arXiv:1710.02298 | 2018 | L'étude d'ablation de référence : mesure l'apport individuel de chaque composant (dont Double, Dueling, PER) sur Atari. Notre protocole 2^3 s'en inspire directement. |
+| 6 | Henderson et al., *Deep Reinforcement Learning that Matters*, AAAI 32(1). doi:10.1609/aaai.v32i1.11694, arXiv:1709.06560 | 2018 | Variabilité entre graines, reproductibilité, pièges de comparaison. Fonde notre protocole statistique : 5-8 graines par configuration, intervalles de confiance bootstrap. |
+
+## 2. Environnement : YAWNING TITAN et benchmarks de cyberdéfense
+
+| # | Article | Année / venue | Pourquoi le lire |
+|---|---------|---------------|------------------|
+| 7 | Andrew et al., *YAWNING TITAN: a cyber-security simulation environment for training autonomous agents*, atelier ML4Cyber @ ICML. Simulateur : github.com/dstl/YAWNING-TITAN | 2022 | Le simulateur du projet : graphe abstrait, agent défensif face à un agent rouge probabiliste, règles du jeu configurables. Référence officielle à citer. |
+| 8 | Palmer, Parry, Harrold, Willis, *Deep Reinforcement Learning for Autonomous Cyber Defence: A Survey*, arXiv:2310.07745 | 2023 | Synthèse du domaine : propriétés du problème ACD, comparaison des environnements de benchmark, défis (dimensionnalité, adversarial learning), questions ouvertes. Carte de l'état de l'art. |
+| 9 | Kiely, Bowman, Standen, Moir, *On Autonomous Agents in a Cyber Defence Environment*, arXiv:2309.07388 | 2023 | Bilan du CAGE Challenge 2 : les agents DRL dominent, la stratégie défensive optimale dépend de celle de l'attaquant. Justifie l'importance du profil de l'agent rouge. |
+| 10 | Tholl, El Mezouar, Taylor, Al Mallah, *Towards Production-Worthy Simulation for Autonomous Cyber Operations*, arXiv:2508.19278 | 2025 | Extension de CybORG avec des actions Patch / Isolate / Unisolate, calques de nos actions défensives ; montre comment modifier reward et espace de features pour l'entraînement. |
+| 11 | Morris, Procter, Wallbank, *Evaluating Reinforcement Learning Agents for Autonomous Cyber Defence*, Applied AI Letters, doi:10.1002/ail2.125 | 2025 | Processus de test et évaluation des agents défensifs : métriques d'efficacité (MoE) au-delà de la récompense RL, évaluation sous perturbations non vues. |
+
+## 3. DQN amélioré appliqué à la cybersécurité
+
+| # | Article | Année / venue | Pourquoi le lire |
+|---|---------|---------------|------------------|
+| 12 | Morphew, Gao, *Double Deep Q-Learning for Autonomous Cyber Defense Agent Training*, IEEE CCECE, doi:10.1109/ccece64018.2025.11364511 | 2025 | DDQN en défense sur CAGE 2 : récompenses comparables ou supérieures au leaderboard du challenge. Notre comparaison directe pour Double DQN. |
+| 13 | Rushendra, Ramli, Purnamasari, *A CNN-LSTM-DQN Policy with Prioritized Experience Replay for Cost-Aware Intrusion Detection on CSE-CIC-IDS2018*, doi:10.59562/jessi.v7i2.2629 | 2026 | Seule ablation contrôlée du replay trouvé en cybersécurité : DQN naïf vs replay uniforme vs PER ; le PER redéfinit à lui seul le compromis rappel / volume d'alertes. Base directe pour la partie PER. |
+| 14 | Shnan, Muter, *Deep Reinforcement Learning for Adaptive Intrusion Detection in Software-Defined Networks*, doi:10.59746/733r3q77 | 2026 | D3QN (Dueling + Double + PER) en détection d'intrusion sur SDN ; le combo le plus proche de nos composants réunis, sans ablation. |
+| 15 | Sharma, Kumar, *Rainbow DQN for Intrusion Detection*, doi:10.12732/ijam.v38i5s.339 | 2025 | Rainbow complet (Double, Dueling, PER, n-step, distributional, Noisy Nets) sur CIC-IDS2017, KDD99, UNSW-NB15. Exemple de combinaison sans isolation des composants. |
+| 16 | Chi, Zhou, Fu, Lim, Qiu, *Task Offloading via Prioritized Experience-Based Double Dueling DQN in Edge-Assisted IIoT*, IEEE TMC, doi:10.1109/tmc.2024.3452502 | 2024 | P-D3QN hors cybersécurité : décompose explicitement la contribution de chaque composant (Double = sélection d'action, Dueling = sur-estimation, PER = convergence). Modèle de narration pour notre section résultats. |
+| 17 | Haddane, Hirchoua, Moutachaouik, *REACT-D3QN: resilient adaptive concept-drift-aware dueling double deep Q-network for robust edge-centric intrusion detection*, Cybersecurity, doi:10.1186/s42400-026-00558-7 | 2026 | Dueling aide à estimer le risque intrinsèque des états réseau ; moteur de récompense asymétrique 10:1 pour maintenir le rappel. Argument pour interpréter nos résultats sous bruit d'alertes. |
+
+## 4. Fonction de récompense (design)
+
+| # | Article | Année / venue | Pourquoi le lire |
+|---|---------|---------------|------------------|
+| 18 | Bates, Mavroudis, Hicks, *Reward Shaping for Happier Autonomous Cyber Security Agents*, AISec @ ACM CCS, arXiv:2310.13565 | 2023 | Sensibilité des algorithmes DRL à la magnitude des pénalités ; pénalités seules vs + récompenses externes vs curiosité intrinsèque. |
+| 19 | Bates, Hicks, Mavroudis, *Less is more? Rewards in RL for Cyber Defence*, arXiv:2503.03245 | 2025 | Rewards sparse vs denses sur réseaux de 2 à 50 nœuds : les rewards sparse alignés sur l'objectif donnent des agents plus efficaces et un entraînement plus stable. |
+| 20 | Bates, Hicks, Mavroudis, *Beyond Rewards in Reinforcement Learning for Cyber Defence*, arXiv:2602.04809 | 2026 | Évaluation systématique de la structure du reward avec algorithmes value-based ET policy-gradient, sur YAWNING TITAN et miniCAGE ; annexes avec résultats DQN détaillés dans YT. Méthodologie la plus proche de notre esprit d'ablation, appliquée aux rewards. |
+| 21 | Tran, Ko, *Balancing Defence and Operational Stability: Resilience-Oriented Reinforcement Learning for Autonomous Critical Infrastructure Cyber Defence*, IEEE RIVF, doi:10.1109/rivf68649.2025.11365238 | 2025 | Reward orienté résilience : arbitrage disponibilité du processus / coût opérationnel des actions défensives. Fonde notre compromis sécurité / disponibilité. |
+| 22 | Ferdous, Islam, Islam, *SA-DRL: Security-Aware Deep Reinforcement Learning for Ransomware Detection with Asymmetric Reward Design*, arXiv:2607.06880 | 2026 | Reward asymétrique faux négatifs / faux positifs testé avec DQN, DDQN, PPO et A2C, 480 runs multi-graines. Gabarit pour pondérer fausses alertes vs compromissions. |
+| 23 | Purves et al., *Causally aware reinforcement learning agents for autonomous cyber defence*, Knowledge-Based Systems, doi:10.1016/j.knosys.2024.112521 | 2024 | Deux fonctions de reward conçues et comparées dans YAWNING TITAN (PPO) ; métriques blue wins, nœuds sains, nœuds isolés. Exemple concret de design de reward dans notre simulateur. |
+
+## 5. Généralisation topologique et observabilité partielle
+
+| # | Article | Année / venue | Pourquoi le lire |
+|---|---------|---------------|------------------|
+| 24 | Wolk et al., *Beyond CAGE: Investigating Generalization of Learned Autonomous Network Defense Policies*, arXiv:2211.15557 | 2022 | Évalue des agents PPO sur réseaux non vus et un attaquant inconnu : tous se dégradent, la dégradation dépend du type de changement. Fonde notre protocole de perturbation d'évaluation. |
+| 25 | Nyberg, Johnson, *Structural Generalization in Autonomous Cyber Incident Response with Message-Passing Neural Networks and Reinforcement Learning*, CSRS @ CSR, arXiv:2407.05775 | 2024 | Variantes de CAGE 2 à nombre d'hôtes variable : les agents relationnels généralisent sans réentraînement, les agents vectoriels doivent être réentraînés. Compromis spécialisation / généralisation quantifié. |
+| 26 | Acuto, Maskell, Jack, *Defending the unknown: Exploring reinforcement learning agents' deployment in realistic, unseen networks*, CEUR Vol-3652. Code : github.com/A-acuto/RLYawningTitan | 2023 | Agents DQN entraînés dans YAWNING TITAN, hyperparamètres explorés par algorithme, déploiement dans des réseaux réalistes jamais vus : dégradation minimale. Notre point de départ d'implémentation (code public). |
+| 27 | Sandoval, Symes Thompson, Mavroudis, Hicks, *An Attentive Graph Agent for Topology-Adaptive Cyber Defence*, arXiv:2501.14700 | 2025 | GAT sur CybORG : évaluation sur réseaux de tailles différentes à sous-structure constante, protocole de généralisation reproductible. |
+| 28 | Symes Thompson, Caron, Hicks, Mavroudis, *Entity-based Reinforcement Learning for Autonomous Cyber Defence*, AutonomousCyber @ ACM CCS, arXiv:2410.17647 | 2024 | Politique Transformer vs MLP dans YAWNING TITAN, généralisation inter-topologies et zéro-shot à des tailles différentes. Contexte de generalization dans notre simulateur. |
+| 29 | Banda, Rens, *Reinforcement Learning of Defensive Strategies Against Attacks in Partially Observable Local Area Networks*, Cybersecurity Journal, doi:10.54364/cybersecurityjournal.2025.1117 | 2025 | POMDP dans CyberBattleSim : détecteurs multiples, blindage probabiliste des actions risquées, mise à jour de croyance pondérée par la fiabilité des détecteurs. Base conceptuelle pour notre couche de bruit sur les alertes. |
+| 30 | Galinkin, Mancoridis, *Strategic reinforcement learning agents for autonomous cyber defense*, thèse, Drexel University, doi:10.17918/00011254 | 2025 | Quatre « failles fatales » du domaine dont l'observabilité de l'état ; le « prix du pessimisme » face à l'attaquant. Encadre notre traitement des observations bruitées. |
+
+## 6. Topologies réseau (justification du choix)
+
+| # | Article | Année / venue | Pourquoi le lire |
+|---|---------|---------------|------------------|
+| 31 | Ermagun, Tajik, Mahmassani, *Uncertainty in vulnerability of networks under attack*, Scientific Reports, doi:10.1038/s41598-023-29899-w | 2023 | 16 topologies testées sous attaque : les topologies en arbre / chaîne sont les plus vulnérables, les complètes les moins ; la vulnérabilité croît avec la taille. Justifie notre choix d'une topologie à chemins multiples. |
+| 32 | Campbell, Eirinaki, Park, *A Curriculum Framework for Autonomous Network Defense using Multi-agent Reinforcement Learning*, IEEE SVCC, doi:10.1109/svcc56964.2023.10165310 | 2023 | Curriculum de topologies vs topologie statique : le curriculum améliore le taux de victoire du défenseur. Référence si nous étendons la variation topologie. |
+
+---
+
+## Gap identifié (positionnement)
+
+Les travaux existants **combinent** Double DQN, Dueling et PER (D3QN, Rainbow) mais ne les **isolent presque jamais** en plan factoriel complet multi-graines sur une tâche de défense de réseau. En particulier, dans la littérature consultée sur YAWNING TITAN, les applications publiées utilisent DQN vanilla, PPO, Actor-Critic ou Transformer ; **aucune ablation factorielle 2^3 de Double / Dueling / PER n'est publiée sur ce simulateur**. Les évaluations rapportent rarement des références aléatoires/heuristiques, des intervalles de confiance multi-graines ou une robustesse testée face au bruit d'alertes et au changement de topologie.
+
+**Contribution visée** : première ablation contrôlée 2^3 (Double DQN, Dueling, PER) dans YAWNING TITAN, avec références aléatoire et heuristique, évaluation sans exploration, intervalles de confiance bootstrap, et deux axes d'évaluation sans réentraînement (généralisation topologique, taux de faux positifs / faux négatifs).
+
+## Répartition (rappel)
+
+- **Ahlame** : Dueling DQN et Prioritized Experience Replay (articles 3, 4, 13, 16, 17 en priorité).
+- **Binôme** : Double DQN (articles 2, 12).
+- **Commun** : articles 1, 5, 6 (socle DQN, ablation Rainbow, protocole statistique), puis l'ensemble des sections 2 à 6 pour la rédaction des travaux connexes.
+
+## À citer avec prudence
+
+La fiche de projet rappelle que les références indiquées de mémoire doivent être vérifiées avant citation (titres, auteurs, années). Les DOI et arXiv ci-dessus ont été vérifiés via une base académique ; vérifier les pages des versions finales avant remise de l'article (format Springer).
