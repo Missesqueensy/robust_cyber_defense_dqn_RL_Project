@@ -23,16 +23,18 @@ def make_graph(name):
 def build_network(name):
     g = make_graph(name)
     net = Network(set_random_vulnerabilities=True,
-              node_vulnerability_lower_bound=0.2,   # à calibrer
-              node_vulnerability_upper_bound=0.8)                      # flags aléatoires = False
+              node_vulnerability_lower_bound=0.2,  
+              node_vulnerability_upper_bound=0.8)                     
     nodes = [Node(name=str(i)) for i in range(N)]
     for i, node in enumerate(nodes):
-       node._uuid = f"{i:02d}"      # uuid fixe : l'ordre trié = l'ordre 0..9                        # ordre 0..9 => ligne i = hôte i
+       node._uuid = f"{i:02d}"                          
        net.add_node(node)
-    nodes[0].entry_node = True                # Star : le hub
+    nodes[0].entry_node = True                
     for u, v in g.edges:
         net.add_edge(nodes[u], nodes[v])
     net.set_node_positions()
+    net.reset_random_vulnerabilities()
+
     return net
 
 
@@ -41,5 +43,5 @@ if __name__ == "__main__":
     for name in ("chain", "ring", "star", "bridge"):
         net = build_network(name)
         adj, pos = net.to_adj_matrix_and_positions()
-        print([n.name for n in sorted(net.get_nodes())])   # ['0','1',...,'9']
+        print([n.name for n in sorted(net.get_nodes())]) 
         print(name, adj.shape, "symétrique:", (adj == adj.T).all(), "somme:", int(adj.sum()))

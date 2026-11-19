@@ -17,7 +17,7 @@ def check(name: str) -> int:
     print(f"{name:7s} taille déclarée = {size}, forme réelle = {obs.shape}")
     assert obs.shape == (size,), "taille déclarée != taille réelle"
 
-    # Les vulnérabilités doivent changer d'un reset à l'autre
+    # vuln change d'un à autre 
     ni.reset()
     v1 = list(ni.get_all_vulnerabilities().values())
     ni.reset()
@@ -25,7 +25,7 @@ def check(name: str) -> int:
     print("   vulnérabilités tirées à chaque reset :", v1 != v2)
     print("   exemple :", [round(x, 2) for x in v2[:5]])
 
-    # L'entrée doit rester le nœud 0
+    # entré d'attaque est tjrs noeud 0
     entries = [n.name for n in ni.current_graph.entry_nodes]
     print("   entrée :", entries)
     return size
