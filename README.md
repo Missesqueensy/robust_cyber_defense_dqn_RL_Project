@@ -1,220 +1,73 @@
-![Python](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue)
-![GitHub](https://img.shields.io/github/license/dstl/YAWNING-TITAN)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/dstl/YAWNING-TITAN/Python%20package)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/dstl/YAWNING-TITAN/build-sphinx-to-github-pages?label=docs)
-![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/dstl/YAWNING-TITAN)
-![GitHub commits since latest release (by SemVer)](https://img.shields.io/github/commits-since/dstl/YAWNING-TITAN/latest)
-![GitHub issue custom search](https://img.shields.io/github/issues-search?label=active%20bug%20issues&
-![GitHub issue custom search](https://img.shields.io/github/issues-search?label=active%20feature%20requests&
-![GitHub Discussions](https://img.shields.io/github/discussions/dstl/YAWNING-TITAN)
+# Étude d'Ablation $2^3$ sur DQN pour la Cyberdéfense Autonome (Yawning-Titan)
 
-# YAWNING-TITAN
+> **Base logicielle :** Ce projet étend l'environnement de simulation défensive **Yawning-Titan** (DSTL). La documentation d'origine de Yawning-Titan est conservée dans [`README_YAWNING_TITAN.md`](./README_YAWNING_TITAN.md).
 
-## About The Project
-YAWNING-TITAN (**YT**) is an abstract, graph based cyber-security simulation environment that supports the training of
-intelligent agents for autonomous cyber operations. YAWNING-TITAN currently only supports defensive autonomous agents
-who face off against probabilistic red agents.
+Étude expérimentale menée dans le cadre du module **Apprentissage par Renforcement appliqué à la cybersécurité**. Ce dépôt regroupe nos implémentations des extensions de DQN (Double DQN, Dueling DQN, Prioritized Experience Replay), l'orchestrateur de la campagne factorielle $2^3$, les résultats bruts nettoyés sur 5 graines aléatoires et les figures d'analyse.
 
-**YT** has been designed with the following things in mind:
-- Simplicity over complexity
-- Minimal Hardware Requirements
-- Operating System agnostic
-- Support for a wide range of algorithms
-- Enhanced agent/policy evaluation support
-- Flexible environment and game rule configuration
-- Generation of evaluation episode visualisations (gifs)
+---
 
-**YT** was publicly released on 20th July 2022 under MIT licence. It will continue to be developed through the Autonomous
-Resilient Cyber Defence (ARCD) project, overseen by Dstl.
+## 1. Question de recherche & Variations expérimentales
 
-## Contributing to YAWNING-TITAN
-Found a bug, have an idea/feature you'd like to suggest, or just want to get involved with the YT community, please read
-our [How to contribute to YAWNING-TITAN?](CONTRIBUTING.md) guidelines.
+* **Question de recherche :** Parmi les trois améliorations classiques de DQN — **Double Q-Learning** (van Hasselt et al., 2016), **Dueling Network Architecture** (Wang et al., 2016) et **Prioritized Experience Replay — PER** (Schaul et al., 2016) — lesquelles améliorent réellement la défense autonome d'un réseau simulé face à une propagation d'attaque sous alertes bruitées, seules ou combinées ?
+* **Variations personnelles du groupe (Double axe de généralisation Zero-Shot) :**
+  1. **Généralisation structurelle inter-topologies ($\epsilon = 0$) :** les agents entraînés sur un réseau de référence sont évalués sans réentraînement sur quatre topologies distinctes (`star`, `chain`, `ring`, `bridge`) afin de mesurer leur robustesse face aux changements de connectivité du graphe.
+  2. **Passage à l'échelle (*Scalability* — augmentation du nombre d'hôtes) :** évaluation de la capacité de généralisation des agents lorsque la taille du réseau augmente au-delà de la configuration d'entraînement ($N = 10$ hôtes), en testant l'extension vers des réseaux plus larges à **$N = 20$ et $N = 50$ hôtes** (espace d'états et d'actions élargi et propagation plus étendue).
 
+---
 
-## What's YAWNING-TITAN built with
+## 2. Structure de nos ajouts dans le dépôt
 
-- [OpenAI's Gym](https://gym.openai.com/)
-- [Networkx](https://github.com/networkx/networkx)
-- [Stable Baselines 3](https://github.com/DLR-RM/stable-baselines3)
-- [Rllib (part of Ray)](https://github.com/ray-project/ray)
+* `README.md` : Documentation principale de l'étude
+* `README_YAWNING_TITAN.md` : Documentation d'origine de Yawning-Titan
+* `src/yawning_titan/my_game/` :
+  * `defense_env.py` : Wrapper Gymnasium de cyberdéfense autour de Yawning-Titan
+  * `make_env.py` : Générateur des topologies (`star`, `chain`, `ring`, `bridge`) et tailles $N$
+  * `make_game_mode.py` & `game_modes.json` : Configuration du scénario (taux FP/FN, propagation)
+  * `my_network.py` : Réseau Q standard (MLP)
+  * `dueling_dqn.py` : Architecture Dueling DQN (Valeur $V(s)$ + Avantage $A(s,a)$)
+  * `per_buffer.py` : Replay Buffer priorisé (SumTree + Importance Sampling)
+  * `reward.py` : Fonction de récompense (compromis sécurité / disponibilité)
+  * `baselines.py` : Politiques de référence (Aléatoire et Heuristique)
+  * `run_ablation.py` : Orchestrateur de la campagne $2^3$ (8 configs $\times$ 5 seeds)
+* `results/` :
+  * `training_curves_clean.csv` : 24 000 épisodes (8 configs $\times$ 5 seeds $\times$ 600 épisodes)
+  * `zero_shot_eval_clean.csv` : 160 évaluations Zero-Shot (8 configs $\times$ 5 seeds $\times$ 4 topologies)
+* `figures/` :
+  * `fig1_dqn_base_learning_curve.png` : Courbe d'apprentissage DQN de base (5 graines)
+  * `fig2_ablation_2x3_learning_curves.png` : Comparaison des 8 configurations d'ablation $2^3$
+  * `fig3_zero_shot_generalization.png` : Généralisation Zero-Shot par topologie (IC 95 %)
 
+---
 
-## Getting Started with YAWNING-TITAN
+## 3. Protocole expérimental & Hyperparamètres
 
-### Pre-Requisites
+| Paramètre | Valeur | Description |
+| :--- | :--- | :--- |
+| **Plan factoriel** | $2^3 = 8$ configurations | `DQN_Base`, `Double`, `Dueling`, `PER`, `Double_Dueling`, `Double_PER`, `Dueling_PER`, `Full` |
+| **Graines (`seeds`)** | `0, 1, 2, 3, 4` | 40 entraînements indépendants au total (5 graines par configuration) |
+| **Budget d'entraînement** | 600 épisodes / run | Horizon maximal fixé avec gestion explicite troncature vs état terminal |
+| **Exploration ($\epsilon$-greedy)** | $\epsilon : 1.0 \rightarrow 0.05$ | Décroissance linéaire sur l'entraînement ; $\epsilon = 0.0$ strict en évaluation |
+| **Évaluation Zero-Shot** | 4 topologies | `star`, `chain`, `ring`, `bridge` (sans mise à jour des poids) |
+| **Variation d'échelle ($N$)** | $N = 10 \rightarrow \{20, 50\}$ | Extension expérimentale de la taille du réseau (passage à 20 et 50 hôtes) |
+| **PER (si activé)** | $\alpha = 0.6$, $\beta : 0.4 \rightarrow 1.0$ | Priorisation proportionnelle à $|\delta_t| + \epsilon$ avec poids d'importance |
 
-In order to get **YT** installed, you will need to have the following installed:
+---
 
-- `python3.8+`
-- `python3-pip`
-- `virtualenv`
-
-**YT** is designed to be OS-agnostic, and thus should work on most variations/distros of Linux, Windows, and MacOS.
-
-### Installation from source
-#### 1. Navigate to the YAWNING-TITAN folder and create a new python virtual environment (venv)
-
-```unix
-python3 -m venv <name_of_venv>
-```
-
-#### 2. Activate the venv
-
-##### Unix
-```bash
-source <name_of_venv>/bin/activate
-```
-
-##### Windows
-```powershell
-.\<name_of_venv>\Scripts\activate
-```
-
-#### 3. Install `yawning-titan` into the venv along with all of it's dependencies
+## 4. Installation et Reproduction complète
 
 ```bash
-python3 -m pip install -e .
-```
+# 1. Créer un environnement virtuel Python 3.10
+python -m venv yt_venv
+.\yt_venv\Scripts\Activate.ps1   # Sous Linux/macOS : source yt_venv/bin/activate
 
+# 2. Installer gym==0.21.0 et Yawning-Titan en mode éditable
+pip install "pip<24.1" "setuptools<58" "wheel<0.38"
+pip install "gym==0.21.0" --no-build-isolation
+pip install "setuptools>=65,<70" "wheel"
+pip install -e . --no-build-isolation
+pip install torch pandas matplotlib
 
-This will install all the dependencies including algorithm libraries. These libraries
-all use `torch`. If you'd like to install `tensorflow` for use with Rllib, you can do this manually
-or install `tensorflow` as an optional dependency by postfixing the command in step 3 above with the `[tensorflow]` extra. Example:
-
-```bash
-python3 -m pip install -e .[tensorflow]
-```
-
-### Development Installation
-To install the development dependencies, postfix the command in step 3 above with the `[dev]` extra. Example:
-
-```bash
-python3 -m pip install -e .[dev]
-```
-
-## Application Directories
-
-Upon install, **YT** creates a set of application directories, both hidden for **YT** use, and visible for user use. The
-created directory trees for Linux, Windows, and MacOS operating systems are detailed below:
-
-##### Linux
-```
-~/
-├─ .cache/
-│  ├─ yawning_titan/
-│  │  ├─ log/
-├─ .config/
-│  ├─ yawning_titan/
-├─ .local/
-│  ├─ share/
-│  │  ├─ yawning_titan/
-│  │  │  ├─ app_images/
-│  │  │  ├─ db/
-│  │  │  ├─ docs/
-├─ yawning_titan/
-│  ├─ agents/
-│  ├─ game_modes/
-│  ├─ images/
-│  ├─ notebooks/
-```
-
-##### Windows
-
-```
-~/
-├─ AppData/
-│  ├─ yawning_titan/
-│  │  ├─ app_images/
-│  │  ├─ config/
-│  │  ├─ db/
-│  │  ├─ docs/
-│  │  ├─ logs/
-├─ yawning_titan/
-│  ├─ agents/
-│  ├─ game_modes/
-│  ├─ images/
-│  ├─ notebooks/
-```
-
-##### MacOS
-```
-~/
-├─ Library/
-│  ├─ Application Support/
-│  │  ├─ Logs/
-│  │  │  ├─ yawning_titan/
-│  │  │  │  ├─ log/
-│  │  ├─ Preferences/
-│  │  │  ├─ yawning_titan/
-│  │  ├─ yawning_titan/
-│  │  │  ├─ app_images/
-│  │  │  ├─ db/
-│  │  │  ├─ docs/
-├─ yawning_titan/
-│  ├─ agents/
-│  ├─ game_modes/
-│  ├─ images/
-│  ├─ notebooks/
-```
-
-## Documentation
-
-**YT** comes with a full set of documentation created using the Sphinx documentation library and are hosted on GitHub
-pages at [https://dstl.github.io/YAWNING-TITAN](https://dstl.github.io/YAWNING-TITAN/index.html).
-
-These docs can also be built manually from the cloned repo by using the following commands:
-> This will require the development dependencies to be installed, see [Development Installation](#development-installation)
-
-##### Unix
-```bash
-cd docs
-make html
-```
-
-##### Windows
-```powershell
-cd docs
-.\make.bat html
-```
-
-
-This will build the documentation as a collection of HTML files which uses the Read The Docs sphinx theme. Other build
-options are available but may require additional dependencies such as LaTeX and PDF. Please refer to the Sphinx documentation
-for your specific output requirements.
-
-## Example Notebooks
-
-A collection of example notebooks have been provided. The original versions of these notebooks stored in
-[`yawning_titan/notebooks/_package_data`](yawning_titan/notebooks/_package_data) and are copied over to the newly created
-users notebooks application directory (`~/yawning_titan/notebooks`) at install. These are the best place to start if you
-want to get a feel for **YT** before builidng the docs and exploring further. If the notebooks become corrupted in the
-users notebooks application directory, they can be reset running the following commands from an interactive Python
-session on your venv:
-
-```python
-from yawning_titan.notebooks.jupyter import reset_default_jupyter_notebooks
-reset_default_jupyter_notebooks(overwrite_existing=True)
-```
-
-## Cite This Work
-
-If you would like to include a citation for **YT** in your work, please cite the paper published at the ICML 2022 ML4Cyber Workshop.
-```bibtex
-@inproceedings{inproceedings,
- author = {Andrew, Alex and Spillard, Sam and Collyer, Joshua and Dhir, Neil},
- year = {2022},
- month = {07},
- title = {Developing Optimal Causal Cyber-Defence Agents via Cyber Security Simulation},
- maintitle = {International Confernece on Machine Learning (ICML)},
- booktitle = {Workshop on Machine Learning for Cybersecurity (ML4Cyber)}
-}
-```
-
-# License
-
-YAWNING-TITAN is released under MIT license. Please see [LICENSE](LICENSE) for details.
-
-# Related Environments
-
-You may also wish to explore the PrimAITE environment, an effective simulation capability for the purposes of training and evaluating AI in a cyber-defensive role: https://github.com/Autonomous-Resilient-Cyber-Defence/PrimAITE
+# 3. Lancer les références et la campagne complète d'ablation 2^3
+cd src/yawning_titan/my_game
+python baselines.py
+python run_ablation.py
