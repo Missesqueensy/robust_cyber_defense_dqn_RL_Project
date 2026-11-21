@@ -4,7 +4,6 @@ import torch
 
 
 class SumTree:
-    """Arbre binaire de sommes pour échantillonnage proportionnel en O(log N)."""
 
     def __init__(self, capacity: int):
         self.capacity = capacity
