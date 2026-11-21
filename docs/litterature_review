@@ -83,10 +83,10 @@ Les travaux existants **combinent** Double DQN, Dueling et PER (D3QN, Rainbow) m
 
 ## Répartition (rappel)
 
-- **Ahlame** : Dueling DQN et Prioritized Experience Replay (articles 3, 4, 13, 16, 17 en priorité).
-- **Binôme** : Double DQN (articles 2, 12).
+- **Ahlame** : Dueling DQN et Prioritized Experience Replay .
+- **Nassima** : DQN,Double DQN .
 - **Commun** : articles 1, 5, 6 (socle DQN, ablation Rainbow, protocole statistique), puis l'ensemble des sections 2 à 6 pour la rédaction des travaux connexes.
-
+Chque 2 jours un meet se fait pour que chacune explique ce qu'elle a compris dans ces articles et en se met d'accord sur un choix après une discussion des avanages en se bansat sur notre variation et question de recherche
 ## À citer avec prudence
 
 La fiche de projet rappelle que les références indiquées de mémoire doivent être vérifiées avant citation (titres, auteurs, années). Les DOI et arXiv ci-dessus ont été vérifiés via une base académique ; vérifier les pages des versions finales avant remise de l'article (format Springer).
