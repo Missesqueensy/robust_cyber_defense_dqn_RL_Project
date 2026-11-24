@@ -14,7 +14,9 @@ P_SPREAD = 0.04          # proba de propagation par arête et par pas
 P_ATTACK_ALERT = 0.7    # proba de détecter une attaque
 
 
-def make_game_mode(p_spread=P_SPREAD, skill=RED_SKILL) -> GameMode:
+#def make_game_mode(p_spread=P_SPREAD, skill=RED_SKILL) -> GameMode:
+def make_game_mode(p_spread=P_SPREAD, skill=RED_SKILL, p_alert=P_ATTACK_ALERT) -> GameMode:
+
     with open(JSON_PATH) as f:
         d = json.load(f)["_default"][BASE_PRESET]
     d.pop("_doc_metadata", None)
@@ -46,10 +48,12 @@ def make_game_mode(p_spread=P_SPREAD, skill=RED_SKILL) -> GameMode:
     # detection: sans scan, YT exige une vue de compromission parfaite pour fonctionner mais on a ajouté de bruit aux observations 
     d["blue"]["intrusion_discovery_chance"]["immediate"]["standard_node"] = 1
     ad = d["blue"]["attack_discovery"]
-    ad["failed_attacks"]["chance"]["standard_node"] = P_ATTACK_ALERT
-    ad["succeeded_attacks_known_compromise"]["chance"]["standard_node"] = P_ATTACK_ALERT
-    ad["succeeded_attacks_unknown_compromise"]["chance"]["standard_node"] = P_ATTACK_ALERT
-
+    #ad["failed_attacks"]["chance"]["standard_node"] = P_ATTACK_ALERT
+    #ad["succeeded_attacks_known_compromise"]["chance"]["standard_node"] = P_ATTACK_ALERT
+    #ad["succeeded_attacks_unknown_compromise"]["chance"]["standard_node"] = P_ATTACK_ALERT
+    ad["failed_attacks"]["chance"]["standard_node"] = p_alert
+    ad["succeeded_attacks_known_compromise"]["chance"]["standard_node"] = p_alert
+    ad["succeeded_attacks_unknown_compromise"]["chance"]["standard_node"] = p_alert
     #  horizon est  fixe , la défaite seulement si les 10 hôtes sont compromis
     gr = d["game_rules"]
     gr["max_steps"] = MAX_STEPS
